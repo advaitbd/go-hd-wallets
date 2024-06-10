@@ -15,6 +15,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/fxamacker/cbor/v2"
+	"github.com/google/uuid"
 
 	// "github.com/fxamacker/cbor/v2"
 	"github.com/gofiber/fiber/v2"
@@ -55,9 +56,15 @@ func GenerateSignRequestHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	requestID := "11fb0bb6192a4e6c93b1cbb0ba5826f3"
+	// generate requestID using uuid v4
+	requestID := uuid.New().String()
+	// split the uuid by '-' and then concatenate to form a single string
+	requestID = requestID[:8] + requestID[9:13] + requestID[14:18] + requestID[19:23] + requestID[24:]
+	fmt.Println(requestID)
+
 	// convert string to uint8array to byte array
 	requestIDBytes, _ := hex.DecodeString(requestID)
+	fmt.Println(requestIDBytes)
 
 	origin := "metamask"
 	var dataType crypto.DataType = crypto.Transaction
