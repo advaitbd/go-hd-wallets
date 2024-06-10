@@ -3,9 +3,13 @@ package handlers
 import (
 	"encoding/hex"
 	"fmt"
+	"math/big"
 
 	"go-keystone/mod/crypto"
+	"go-keystone/mod/utils"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/gofiber/fiber/v2"
 	"seedhammer.com/bc/ur"
@@ -20,6 +24,8 @@ type SignTransactionRequest struct {
 func SignTransactionHandler(c *fiber.Ctx) error {
 	var request SignTransactionRequest
 	var decoder ur.Decoder
+	// var data crypto.TxParams
+
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
@@ -36,38 +42,38 @@ func SignTransactionHandler(c *fiber.Ctx) error {
 	}
 
 	decoder.Add(signature)
-
-	typ, cbor, err := decoder.Result()
+	_, cborBytes, err := decoder.Result()
+	fmt.Printf("cborBytes: %x\n", cborBytes)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	fmt.Println("typ: ", typ)
-	fmt.Println("cbor: ", cbor)
+	// decoding cbor to get the ETHSignature object
+	var ethSignature crypto.ETHSignature
+	err = utils.FromCBOR(cborBytes, &ethSignature, nil)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
 
-	// ethSignature, err := eth.NewEthSignatureFromCBOR(cbor)
-	// if err != nil {
-	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	// }
+	fmt.Println("ethSignature: ", ethSignature)
+	// print request id after converting to hex
+	fmt.Printf("RequestID: %x\n", ethSignature.RequestID)
+	fmt.Println("Signature: ", ethSignature.Signature[:65])
 
-	// sig := ethSignature.Signature()
-	// r := sig[:32]
-	// s := sig[32:64]
-	// v := sig[64]
+	parsedSignature := ethSignature.Signature
 
-	// value := new(big.Int).SetUint64(txData.Value)
-	// tx := types.NewTransaction(txData.Nonce, common.HexToAddress(txData.To), value, txData.GasLimit, txData.GasPrice, common.FromHex(txData.Data))
-	// txWithSig, err := tx.WithSignature(types.HomesteadSigner{}, append(r, append(s, v)...))
-	// if err != nil {
-	// 	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	// }
-
-	txWithSig := "txWithSig"
+	value := new(big.Int).SetUint64(txData.Value)
+	gasPrice := new(big.Int).SetUint64(txData.GasPrice)
+	tx := types.NewTransaction(txData.Nonce, common.HexToAddress(txData.To), value, txData.GasLimit, gasPrice, common.FromHex(txData.Data))
+	txWithSig, err := tx.WithSignature(types.HomesteadSigner{}, parsedSignature[:65])
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
 
 	signedTxn, err := rlp.EncodeToBytes(txWithSig)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"signedTxn": hex.EncodeToString(signedTxn)})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"signedTxn": "0x" + hex.EncodeToString(signedTxn)})
 }

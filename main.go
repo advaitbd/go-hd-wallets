@@ -24,7 +24,7 @@ func main() {
 	})
 
 	app.Post("/fingerprint", handlers.DecodeURHandler)
-	app.Post("/transaction", handlers.GenerateQRHandler)
+	app.Post("/transaction", handlers.GenerateSignRequestHandler)
 	app.Post("/sign", handlers.SignTransactionHandler)
 
 	log.Fatal(app.Listen(":8000"))
