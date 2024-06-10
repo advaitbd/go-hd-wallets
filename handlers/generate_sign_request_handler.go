@@ -27,13 +27,6 @@ type GenerateSignRequestData struct {
 
 func GenerateSignRequestHandler(c *fiber.Ctx) error {
 	var request GenerateSignRequestData
-	var signRequest crypto.EVMSignRequest
-
-
-	raw, _ := hex.DecodeString(testSignRequestHex)
-	utils.FromCBOR(raw, &signRequest, nil)
-
-	// fmt.Println("fingerprint: ", *signRequest.DerivationPath.SourceFingerprint)
 
 	if err := c.BodyParser(&request); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
