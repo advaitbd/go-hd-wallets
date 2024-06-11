@@ -5,7 +5,7 @@ module go-keystone/mod
 require (
 	github.com/ethereum/go-ethereum v1.14.4
 	github.com/gofiber/fiber/v2 v2.52.4
-	github.com/google/uuid v1.5.0 // indirect
+	github.com/google/uuid v1.5.0
 	seedhammer.com v1.2.1
 )
 
