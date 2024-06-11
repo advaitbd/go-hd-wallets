@@ -5,7 +5,6 @@ import (
 
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"go-keystone/mod/crypto"
 	"go-keystone/mod/utils"
 	"math/big"
@@ -42,15 +41,12 @@ func GenerateSignRequestHandler(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "fingerprint is required"})
 	}
 
-	// conver txData value from Int to big.Int
+	// converr txData value from Int to big.Int
 	value := new(big.Int).SetUint64(txData.Value)
 	gasPrice := new(big.Int).SetUint64(txData.GasPrice)
 	tx := types.NewTransaction(txData.Nonce, common.HexToAddress(txData.To), value, txData.GasLimit, gasPrice, common.FromHex(txData.Data))
 
 	txRlp, err := rlp.EncodeToBytes(tx)
-	// convert to hex
-	txRlpHex := hex.EncodeToString(txRlp)
-	fmt.Println("txRlpHex: ", txRlpHex)
 
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -60,11 +56,9 @@ func GenerateSignRequestHandler(c *fiber.Ctx) error {
 	requestID := uuid.New().String()
 	// split the uuid by '-' and then concatenate to form a single string
 	requestID = requestID[:8] + requestID[9:13] + requestID[14:18] + requestID[19:23] + requestID[24:]
-	fmt.Println(requestID)
 
 	// convert string to uint8array to byte array
 	requestIDBytes, _ := hex.DecodeString(requestID)
-	fmt.Println(requestIDBytes)
 
 	origin := "metamask"
 	var dataType crypto.DataType = crypto.Transaction

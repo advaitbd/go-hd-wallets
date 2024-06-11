@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/hex"
-	"fmt"
 	"math/big"
 
 	"go-keystone/mod/crypto"
@@ -43,7 +42,6 @@ func SignTransactionHandler(c *fiber.Ctx) error {
 
 	decoder.Add(signature)
 	_, cborBytes, err := decoder.Result()
-	fmt.Printf("cborBytes: %x\n", cborBytes)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -54,11 +52,6 @@ func SignTransactionHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-
-	fmt.Println("ethSignature: ", ethSignature)
-	// print request id after converting to hex
-	fmt.Printf("RequestID: %x\n", ethSignature.RequestID)
-	fmt.Println("Signature: ", ethSignature.Signature[:65])
 
 	parsedSignature := ethSignature.Signature
 

@@ -32,8 +32,7 @@ func DecodeURHandler(c *fiber.Ctx) error {
 	decoder.Add(request.URData)
 
 	_, cborBytes, err := decoder.Result()
-	// print hex of cborBytes
-	fmt.Printf("cborBytes: %x\n", cborBytes)
+
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
@@ -44,11 +43,6 @@ func DecodeURHandler(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
-
-	fmt.Println("KeystoneHDKey: ", KeystoneHDKey)
-	fmt.Println("UseInfo: ", KeystoneHDKey.UseInfo)
-	fmt.Println("Origin: ", KeystoneHDKey.Origin)
-	fmt.Println("Children: ", KeystoneHDKey.Children)
 
 	// Convert SourceFingerprint to hex string
 	sourceFingerprint := fmt.Sprintf("%x", KeystoneHDKey.Origin.SourceFingerprint)
