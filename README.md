@@ -2,7 +2,7 @@
 
 ## Description
 
-This repository holds the code for a simple backend service to support air-gapped transaction signing using the a HD Wallet.
+This repository holds the code for a simple backend service to support air-gapped transaction signing using a HD Wallet.
 
 ## Installation
 
