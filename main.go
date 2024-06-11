@@ -23,9 +23,9 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
-	app.Post("/fingerprint", handlers.DecodeURHandler)
-	app.Post("/transaction", handlers.GenerateSignRequestHandler)
-	app.Post("/sign", handlers.SignTransactionHandler)
+	app.Post("/get-fingerprint", handlers.DecodeURHandler)
+	app.Post("/get-sign-request", handlers.GenerateSignRequestHandler)
+	app.Post("/sign-transaction", handlers.SignTransactionHandler)
 
 	log.Fatal(app.Listen(":8000"))
 }
