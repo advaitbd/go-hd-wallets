@@ -1,4 +1,4 @@
-# Keystone Signing Backend
+# HD Watch-Only Signing Tool
 
 ## Description
 
