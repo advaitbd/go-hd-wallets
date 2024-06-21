@@ -78,7 +78,7 @@ func SignTransactionHandler(c *fiber.Ctx) error {
 		recoveryByte = 0x1b
 	}
 
-	signatureBytes, err := utils.Concat([][]byte{r, s, []byte{recoveryByte}})
+	signatureBytes, _ := utils.Concat([][]byte{r, s, {recoveryByte}})
 
 	sig, _ := utils.Hexlify(signatureBytes, nil)
 
