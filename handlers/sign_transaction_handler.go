@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/hex"
+	"fmt"
 	"math/big"
 
 	"go-keystone/mod/crypto"
@@ -54,11 +55,41 @@ func SignTransactionHandler(c *fiber.Ctx) error {
 	}
 
 	parsedSignature := ethSignature.Signature
+	r := parsedSignature[:32]
+	s := parsedSignature[32:64]
+	vBytes := parsedSignature[64:]
+
+	// Getting v from the last byte(s) of the signature
+	v := big.NewInt(0)
+	for _, b := range vBytes {
+		v = new(big.Int).Lsh(v, 8) // v << 8
+		v = new(big.Int).Add(v, big.NewInt(int64(b)))
+	}
+
+	// Recovery param is calculated as 1 - (v % 2)
+	recoveryParam := big.NewInt(1)
+	recoveryParam = recoveryParam.Sub(recoveryParam, new(big.Int).Mod(v, big.NewInt(2)))
+
+	// Constructs and returns the signature in the format expected by ethers.js which is 65 bytes
+	var recoveryByte byte
+	if recoveryParam.Cmp(big.NewInt(1)) == 0 {
+		recoveryByte = 0x1c
+	} else {
+		recoveryByte = 0x1b
+	}
+
+	signatureBytes, err := utils.Concat([][]byte{r, s, []byte{recoveryByte}})
+
+	sig, _ := utils.Hexlify(signatureBytes, nil)
+
+	fmt.Println("Signature: ", sig)
 
 	value := new(big.Int).SetUint64(txData.Value)
 	gasPrice := new(big.Int).SetUint64(txData.GasPrice)
 	tx := types.NewTransaction(txData.Nonce, common.HexToAddress(txData.To), value, txData.GasLimit, gasPrice, common.FromHex(txData.Data))
-	txWithSig, err := tx.WithSignature(types.HomesteadSigner{}, parsedSignature[:65])
+
+	txWithSig, err := tx.WithSignature(types.HomesteadSigner{}, signatureBytes)
+
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
